@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}ProphitBet · Home{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>ProphitBet Web</h1>
+  <p>Leagues, full model roster, Optuna/CV, multi-target eval, research sweeps, fixtures, and analysis.</p>
+  <div class="actions" style="margin-top:1rem;">
+    <a class="btn" href="{{ bp }}/leagues/new">Create league</a>
+    <a class="btn secondary" href="{{ bp }}/models">Models</a>
+    <a class="btn secondary" href="{{ bp }}/research">Research</a>
+    <a class="btn secondary" href="{{ bp }}/predict/fixtures">Fixtures</a>
+    <a class="btn secondary" href="{{ bp }}/guide">User guide</a>
+  </div>
+</section>
+
+<div class="grid">
+  <section class="panel">
+    <h2>Leagues</h2>
+    {% if leagues %}
+      <ul>
+        {% for league in leagues %}
+          <li><a href="{{ bp }}/leagues/{{ league.league_id }}">{{ league.league_id }}</a> · {{ league.rows }} matches</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No leagues yet. Start with File-equivalent: New League.</p>
+    {% endif %}
+  </section>
+  <section class="panel">
+    <h2>Recent jobs</h2>
+    {% if jobs %}
+      <ul>
+        {% for job in jobs %}
+          <li>
+            <a href="{{ bp }}/jobs/{{ job.id }}">#{{ job.id }} {{ job.job_type }}</a>
+            <span class="badge {% if job.status == 'completed' %}ok{% elif job.status == 'failed' %}fail{% elif job.status == 'running' %}run{% endif %}">{{ job.status }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No jobs yet.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Models{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Model manager</h1>
+  <form method="get" action="{{ bp }}/models" class="form-row">
+    <div>
+      <label for="league_id">League</label>
+      <select id="league_id" name="league_id" onchange="this.form.submit()">
+        <option value="">Select...</option>
+        {% for league in leagues %}
+          <option value="{{ league.league_id }}" {% if league.league_id == selected_league %}selected{% endif %}>{{ league.league_id }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if selected_league %}
+  <div class="actions" style="margin:1rem 0;">
+    <a class="btn" href="{{ bp }}/models/train?league_id={{ selected_league }}">Train one</a>
+    <a class="btn secondary" href="{{ bp }}/models/evaluate?league_id={{ selected_league }}">Evaluate</a>
+  </div>
+
+  <h3>Batch train</h3>
+  <form method="post" action="{{ bp }}/models/batch-train">
+    <input type="hidden" name="league_id" value="{{ selected_league }}" />
+    <div class="form-row">
+      <div>
+        <label>Algorithms</label>
+        {% for m in model_choices %}
+          {% if m.value != 'neural_network' %}
+          <label style="display:block;"><input type="checkbox" name="model_types" value="{{ m.value }}" {% if m.value in ['random_forest','xgboost','logistic'] %}checked{% endif %}/> {{ m.label }}</label>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div>
+        <label>Targets</label>
+        {% for t in target_choices %}
+          <label style="display:block;"><input type="checkbox" name="target_keys" value="{{ t.value }}" {% if t.value in ['result','over_under'] %}checked{% endif %}/> {{ t.label }}</label>
+        {% endfor %}
+      </div>
+      <div>
+        <label for="eval_ratio">Eval ratio</label>
+        <input id="eval_ratio" name="eval_ratio" type="number" min="0.05" max="0.4" step="0.05" value="0.2" />
+      </div>
+    </div>
+    <button type="submit">Start batch</button>
+  </form>
+
+  <h3 style="margin-top:1.5rem;">Saved models</h3>
+  {% if models %}
+  <table>
+    <thead><tr><th>ID</th><th>Type</th><th>Target</th><th>Eval acc</th><th>Created</th><th></th></tr></thead>
+    <tbody>
+      {% for m in models %}
+      <tr>
+        <td>{{ m.model_id }}</td>
+        <td>{{ m.model_type }}</td>
+        <td>{{ m.target_type }}</td>
+        <td>
+          {% set ns = namespace(acc='—') %}
+          {% if m.metrics and m.metrics.rows %}
+            {% for r in m.metrics.rows %}
+              {% if r.data == 'eval' %}{% set ns.acc = '%.3f'|format(r.Accuracy) %}{% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ ns.acc }}
+        </td>
+        <td class="muted">{{ m.created_at or '—' }}</td>
+        <td class="actions">
+          <a class="btn secondary" href="{{ bp }}/models/evaluate?league_id={{ selected_league }}&model_id={{ m.model_id }}">Eval</a>
+          <a class="btn secondary" href="{{ bp }}/explain?league_id={{ selected_league }}&model_id={{ m.model_id }}">Explain</a>
+          <form method="post" action="{{ bp }}/models/{{ selected_league }}/{{ m.model_id }}/delete" style="display:inline;" onsubmit="return confirm('Delete model?');">
+            <button type="submit" class="secondary">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No models for this league yet.</p>
+  {% endif %}
+  {% endif %}
+</section>
+{% endblock %}

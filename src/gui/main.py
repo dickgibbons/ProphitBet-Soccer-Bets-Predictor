@@ -2,9 +2,9 @@ import pandas as pd
 import qdarktheme
 import webbrowser
 from typing import Optional
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QAction, QActionGroup, QKeySequence
-from PyQt6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox
+from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QMenu, QMessageBox, QVBoxLayout, QWidget
 from src.database.league import LeagueDatabase
 from src.database.model import ModelDatabase
 from src.gui.windows import analysis
@@ -55,6 +55,8 @@ class MainWindow(QMainWindow):
         # Initializing main window.
         self._initialize_window()
         self._add_widgets()
+        qdarktheme.setup_theme(self._qdark_theme_mapper[self._current_theme])
+        self._show_empty_state()
 
         QTimer.singleShot(200, self._show_welcome_message)
 
@@ -642,10 +644,34 @@ class MainWindow(QMainWindow):
         QMessageBox.information(
             self,
             'Welcome Notification',
-            'Thank you for using ProphitBet-v2. '
-                 'This is an open-source, non-profit application. I am not responsible for any losses. '
-                 'Please Bet Responsibly!'
+            'Thank you for using ProphitBet-v2.\n\n'
+            'To get started: File → New League (⌘N).\n\n'
+            'This is an open-source, non-profit application. I am not responsible for any losses. '
+            'Please Bet Responsibly!'
         )
+
+    def _show_empty_state(self):
+        """ Shows a placeholder when no league is loaded (avoids a blank white window). """
+
+        placeholder = QWidget(self)
+        layout = QVBoxLayout(placeholder)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        title = QLabel('No league loaded')
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet('font-size: 22px; font-weight: 600;')
+
+        hint = QLabel(
+            'Create a league with File → New League (⌘N),\n'
+            'or open an existing one with File → Load League (⌘O).'
+        )
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hint.setStyleSheet('font-size: 14px; opacity: 0.8;')
+
+        layout.addWidget(title)
+        layout.addWidget(hint)
+        self.setCentralWidget(placeholder)
+        self._table = None
 
     def _load_new_league(self, df: Optional[pd.DataFrame], league: Optional[League]):
         """ Load league matches into the table and stores current matches, league id. """
@@ -654,7 +680,7 @@ class MainWindow(QMainWindow):
             return
 
         if self._league_df is not None:
-            self._clear_table()
+            self._clear_table(show_empty=False)
 
         # Add matches to the league table.
         self._table = ExcelTable(parent=self, df=df, readonly=True, supports_sorting=True, supports_query_search=True)
@@ -668,13 +694,18 @@ class MainWindow(QMainWindow):
         self._league = league
         self._model_db = ModelDatabase(league_id=self._league.league_id)
 
-    def _clear_table(self):
+    def _clear_table(self, show_empty: bool = True):
         """ Removes all league data from the table. """
 
-        self._table.setParent(None)      # disconnects from its parent/layout
-        self._table.deleteLater()        # schedules the object for deletion
-        self.setCentralWidget(None)
-        self._table = None
+        if self._table is not None:
+            self._table.setParent(None)      # disconnects from its parent/layout
+            self._table.deleteLater()        # schedules the object for deletion
+            self._table = None
+
+        if show_empty:
+            self._show_empty_state()
+        else:
+            self.setCentralWidget(None)
 
     def _set_league_menus_state(self, enabled: bool):
         """ Enables/Disables league functions. """

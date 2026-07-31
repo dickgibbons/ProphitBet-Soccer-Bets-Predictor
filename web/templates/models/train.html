@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Train{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Train model</h1>
+  <p class="muted">All sklearn classifiers, full train knobs, optional Optuna + CV. DNN appears when the full-ml image is used.</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post" action="{{ bp }}/models/train">
+    <div class="form-row">
+      <div>
+        <label for="league_id">League</label>
+        <select id="league_id" name="league_id" required>
+          <option value="">Select...</option>
+          {% for league in leagues %}
+            <option value="{{ league.league_id }}" {% if league.league_id == selected_league %}selected{% endif %}>{{ league.league_id }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="model_id">Model ID</label>
+        <input id="model_id" name="model_id" placeholder="rf-result-01" required />
+      </div>
+      <div>
+        <label for="model_type">Algorithm</label>
+        <select id="model_type" name="model_type" required>
+          {% for m in model_choices %}
+            <option value="{{ m.value }}" {% if m.value == 'random_forest' %}selected{% endif %}>{{ m.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="target_key">Target</label>
+        <select id="target_key" name="target_key" required>
+          {% for t in target_choices %}
+            <option value="{{ t.value }}">{{ t.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="eval_ratio">Eval ratio</label>
+        <input id="eval_ratio" name="eval_ratio" type="number" min="0.05" max="0.4" step="0.05" value="0.2" />
+      </div>
+    </div>
+
+    <h3>Preprocessing</h3>
+    <div class="form-row">
+      <div>
+        <label for="normalizer_key">Normalizer</label>
+        <select id="normalizer_key" name="normalizer_key">
+          <option value="none">None</option>
+          <option value="standard" selected>Standard</option>
+          <option value="min_max">Min-Max</option>
+          <option value="max_abs">Max-Abs</option>
+        </select>
+      </div>
+      <div>
+        <label for="sampler_key">Sampler</label>
+        <select id="sampler_key" name="sampler_key">
+          <option value="none" selected>None</option>
+          <option value="svm_smote">SVM-SMOTE</option>
+          <option value="nearmiss">Near-Miss</option>
+          <option value="instance_hardness">Instance Hardness</option>
+        </select>
+      </div>
+      <div>
+        <label for="calibrate">Calibrate probs</label>
+        <select id="calibrate" name="calibrate">
+          <option value="yes" selected>Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Hyperparameters (defaults used if unused by algorithm)</h3>
+    <div class="form-row">
+      <div>
+        <label for="n_estimators">n_estimators</label>
+        <input id="n_estimators" name="n_estimators" type="number" value="100" />
+      </div>
+      <div>
+        <label for="max_depth">max_depth (blank=None)</label>
+        <input id="max_depth" name="max_depth" type="text" value="" />
+      </div>
+      <div>
+        <label for="learning_rate">learning_rate (XGB)</label>
+        <input id="learning_rate" name="learning_rate" type="number" step="0.05" value="0.3" />
+      </div>
+      <div>
+        <label for="n_neighbors">n_neighbors (KNN)</label>
+        <input id="n_neighbors" name="n_neighbors" type="number" value="5" />
+      </div>
+      <div>
+        <label for="kernel">kernel (SVM)</label>
+        <select id="kernel" name="kernel">
+          <option value="linear" selected>linear</option>
+          <option value="rbf">rbf</option>
+          <option value="poly">poly</option>
+        </select>
+      </div>
+      <div>
+        <label for="penalty">penalty (LR)</label>
+        <select id="penalty" name="penalty">
+          <option value="l2" selected>l2</option>
+          <option value="l1">l1</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>Validation / tuning</h3>
+    <div class="form-row">
+      <div>
+        <label><input type="checkbox" name="run_cv" /> K-fold CV</label>
+      </div>
+      <div>
+        <label><input type="checkbox" name="sliding_cv" /> Sliding CV</label>
+      </div>
+      <div>
+        <label for="cv_folds">CV folds</label>
+        <input id="cv_folds" name="cv_folds" type="number" min="2" max="10" value="5" />
+      </div>
+      <div>
+        <label><input type="checkbox" name="tune" /> Optuna tune</label>
+      </div>
+      <div>
+        <label for="tune_trials">Trials</label>
+        <input id="tune_trials" name="tune_trials" type="number" min="5" max="100" value="20" />
+      </div>
+      <div>
+        <label for="tune_metric">Tune metric</label>
+        <select id="tune_metric" name="tune_metric">
+          <option>Accuracy</option>
+          <option>F1</option>
+          <option>Precision</option>
+          <option>Recall</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit">Start training</button>
+  </form>
+</section>
+{% endblock %}

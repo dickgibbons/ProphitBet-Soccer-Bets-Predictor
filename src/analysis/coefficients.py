@@ -76,12 +76,8 @@ class CoefficientAnalyzer(FeatureAnalyzer):
         model.fit(x, y)
 
         # Get classes, coefficients
-        if target_type == TargetType.RESULT:
-            classes = ['H', 'D', 'A']
-        elif target_type == TargetType.OVER_UNDER:
-            classes = ['U', 'O']
-        else:
-            raise ValueError(f'Not defined target type: {target_type.name}')
+        from src.preprocessing.utils.target import class_names
+        classes = class_names(target_type)
 
         return np.abs(model.coef_), classes
 

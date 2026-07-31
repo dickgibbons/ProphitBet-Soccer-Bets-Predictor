@@ -4,6 +4,10 @@ from src.interpretability.explainers.extremeboosting import ExtremeBoostingExpla
 from src.interpretability.explainers.knn import KNNExplainer
 from src.interpretability.explainers.logistic import LogisticRegressionExplainer
 from src.interpretability.explainers.naivebayes import NaiveBayesExplainer
-from src.interpretability.explainers.nn import NeuralNetworkExplainer
 from src.interpretability.explainers.randomforest import RandomForestExplainer
 from src.interpretability.explainers.svm import SVMExplainer
+
+try:
+    from src.interpretability.explainers.nn import NeuralNetworkExplainer
+except ImportError:
+    NeuralNetworkExplainer = None  # type: ignore

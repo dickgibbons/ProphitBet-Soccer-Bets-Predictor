@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import time
 import pandas as pd
 from typing import Optional
@@ -21,20 +22,34 @@ class FootyStatsScraper:
         with open('storage/network/browser.json', mode='r') as jsonfile:
             browser = json.load(jsonfile)['application']
 
+        headless = os.environ.get('FOOTYSTATS_HEADLESS', '').strip() in ('1', 'true', 'yes')
+
         if browser == 'chrome':
             options = ChromeOptions()
             options.add_argument('--incognito')
             options.add_argument('--lang=en-US')
+            if headless:
+                options.add_argument('--headless=new')
+                options.add_argument('--no-sandbox')
+                options.add_argument('--disable-dev-shm-usage')
+                options.add_argument('--disable-gpu')
+                chrome_bin = os.environ.get('CHROME_BIN') or os.environ.get('CHROMIUM_PATH')
+                if chrome_bin:
+                    options.binary_location = chrome_bin
             self._web_driver = Chrome(options=options)
         elif browser == 'firefox':
             options = FirefoxOptions()
             options.add_argument('--incognito')
             options.set_preference('intl.accept_languages', 'en-US, en')
+            if headless:
+                options.add_argument('-headless')
             self._web_driver = Firefox(options=options)
         elif browser == 'edge':
             options = EdgeOptions()
             options.add_argument('--incognito')
             options.add_argument('--lang=en-US')
+            if headless:
+                options.add_argument('--headless=new')
             self._web_driver = Edge(options=options)
         else:
             raise NotImplementedError(

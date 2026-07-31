@@ -1,0 +1,31 @@
+services:
+  prophitbet-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${DOCKER_TARGET:-base}
+      args:
+        REQUIREMENTS_FILE: ${REQUIREMENTS_FILE:-requirements-web.txt}
+    container_name: prophitbet-web
+    ports:
+      - "127.0.0.1:8010:8000"
+    environment:
+      PROPHITBET_USER: ${PROPHITBET_USER:-admin}
+      PROPHITBET_PASSWORD: ${PROPHITBET_PASSWORD:-changeme}
+      DATABASE_URL: sqlite:///data/app.db
+      ROOT_PATH: /prophitbet
+      PROPHITBET_AUTH_DISABLED: ${PROPHITBET_AUTH_DISABLED:-1}
+      FOOTYSTATS_HEADLESS: "1"
+    volumes:
+      - ./data:/app/data
+      - ./storage/leagues:/app/storage/leagues
+    restart: unless-stopped
+
+  # Optional: same service rebuilt for fixtures (Chromium + Selenium)
+  #   REQUIREMENTS_FILE=requirements-fixtures.txt DOCKER_TARGET=fixtures docker compose up -d --build
+  #
+  # Optional: analysis/SHAP/Boruta (no Chrome):
+  #   REQUIREMENTS_FILE=requirements-analysis.txt DOCKER_TARGET=base docker compose up -d --build
+  #
+  # Optional: full ML (TF + fixtures + analysis):
+  #   REQUIREMENTS_FILE=requirements-full-ml.txt DOCKER_TARGET=full-ml docker compose up -d --build

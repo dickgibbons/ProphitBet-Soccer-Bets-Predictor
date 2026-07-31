@@ -1,0 +1,38 @@
+<div id="job-status"
+     hx-get="{{ bp }}/jobs/{{ job.id }}/status"
+     hx-trigger="{% if job.status in ['queued', 'running'] %}every 2s{% else %}none{% endif %}"
+     hx-swap="outerHTML">
+  <div class="grid">
+    <div class="stat">
+      <div class="label">Status</div>
+      <div class="value">
+        <span class="badge {% if job.status == 'completed' %}ok{% elif job.status == 'failed' %}fail{% elif job.status == 'running' %}run{% endif %}">{{ job.status }}</span>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="label">Message</div>
+      <div class="value" style="font-size:1rem;">{{ job.message }}</div>
+    </div>
+  </div>
+  <div class="progress" style="margin:1rem 0;">
+    <span style="width: {{ (job.progress or 0) * 100 }}%;"></span>
+  </div>
+  {% if job.status == 'completed' and job.result %}
+    <div class="success">
+      Job finished.
+      {% if job.result.league_id %}
+        <a href="{{ bp }}/leagues/{{ job.result.league_id }}">Open league {{ job.result.league_id }}</a>
+      {% endif %}
+      {% if job.result.model_id and job.result.league_id %}
+        · <a href="{{ bp }}/models/evaluate?league_id={{ job.result.league_id }}&model_id={{ job.result.model_id }}">Evaluate {{ job.result.model_id }}</a>
+      {% endif %}
+    </div>
+    <pre>{{ job.result | tojson(indent=2) }}</pre>
+  {% endif %}
+  {% if job.status == 'failed' %}
+    <div class="error">{{ job.error }}</div>
+  {% endif %}
+  {% if job.status in ['queued', 'running'] %}
+    <p class="muted">Refreshing automatically…</p>
+  {% endif %}
+</div>

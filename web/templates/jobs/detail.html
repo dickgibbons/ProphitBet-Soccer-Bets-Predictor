@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Job #{{ job.id }}{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Job #{{ job.id }}</h1>
+  <p class="muted">{{ job.job_type }}</p>
+  {% include "jobs/status_partial.html" %}
+</section>
+{% endblock %}

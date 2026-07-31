@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}New League{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Create league</h1>
+  <p class="muted">Downloads historical matches from football-data.co.uk and computes team form stats. This runs as a background job.</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post" action="{{ bp }}/leagues/new" id="new-league-form">
+    <div class="form-row">
+      <div>
+        <label for="template_index">League</label>
+        <select id="template_index" name="template_index" required>
+          {% for t in templates %}
+            <option
+              value="{{ t.index }}"
+              data-suggested-id="{{ t.suggested_id }}"
+              data-start-year="{{ t.start_year }}"
+              {% if selected_template is defined and selected_template == t.index %}selected{% endif %}
+            >{{ t.label }} ({{ t.category }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="league_id">Unique ID</label>
+        <div class="actions" style="gap:0.4rem; align-items:stretch;">
+          <input id="league_id" name="league_id" placeholder="auto-generated" required style="margin-bottom:0; flex:1;" />
+          <button type="button" class="secondary" id="regen-id" title="Regenerate id">↻</button>
+        </div>
+        <p class="muted" style="margin:0.35rem 0 0; font-size:0.8rem;">Auto-filled as <code>Name-Country-01</code>; increments if that id already exists. Editable.</p>
+      </div>
+      <div>
+        <label for="start_year">Start year</label>
+        <input id="start_year" name="start_year" type="number" value="{{ default_start_year }}" required />
+      </div>
+      <div>
+        <label for="match_history_window">Match history window</label>
+        <input id="match_history_window" name="match_history_window" type="number" min="2" max="5" value="3" />
+      </div>
+      <div>
+        <label for="goal_diff_margin">Goal-diff margin</label>
+        <input id="goal_diff_margin" name="goal_diff_margin" type="number" min="2" max="5" value="2" />
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit">Download & create</button>
+      <a class="btn secondary" href="{{ bp }}/leagues">Cancel</a>
+    </div>
+  </form>
+</section>
+<script>
+(function () {
+  var select = document.getElementById('template_index');
+  var idInput = document.getElementById('league_id');
+  var yearInput = document.getElementById('start_year');
+  var regen = document.getElementById('regen-id');
+  var autoMode = true;
+  var defaultYearFloor = {{ default_start_year }};
+
+  function applySuggestion() {
+    var opt = select.options[select.selectedIndex];
+    if (!opt) return;
+    idInput.value = opt.getAttribute('data-suggested-id') || '';
+    var start = parseInt(opt.getAttribute('data-start-year') || '2015', 10);
+    yearInput.value = Math.max(start, defaultYearFloor);
+    autoMode = true;
+  }
+
+  select.addEventListener('change', function () {
+    if (autoMode || !idInput.value.trim()) applySuggestion();
+  });
+  idInput.addEventListener('input', function () { autoMode = false; });
+  regen.addEventListener('click', applySuggestion);
+  applySuggestion();
+})();
+</script>
+{% endblock %}

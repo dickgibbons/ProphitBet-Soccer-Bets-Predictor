@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}ProphitBet{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ bp }}/static/style.css" />
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand">Prophit<span>Bet</span> Web</div>
+      <nav>
+        <a href="{{ bp }}/">Home</a>
+        <a href="{{ bp }}/leagues">Leagues</a>
+        <a href="{{ bp }}/leagues/new">New League</a>
+        <a href="{{ bp }}/models">Models</a>
+        <a href="{{ bp }}/models/train">Train</a>
+        <a href="{{ bp }}/models/evaluate">Evaluate</a>
+        <a href="{{ bp }}/predict/manual">Predict</a>
+        <a href="{{ bp }}/predict/fixtures">Fixtures</a>
+        <a href="{{ bp }}/research">Research</a>
+        <a href="{{ bp }}/analysis">Analysis</a>
+        <a href="{{ bp }}/explain">Explain</a>
+        <a href="{{ bp }}/jobs">Jobs</a>
+        <a href="{{ bp }}/guide">Guide</a>
+      </nav>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <p class="footer">ProphitBet Web · signed in as {{ user }} · bet responsibly</p>
+  </div>
+</body>
+</html>

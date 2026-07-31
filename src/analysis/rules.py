@@ -22,12 +22,8 @@ class RuleExtractorAnalyzer(FeatureAnalyzer):
         # Fit tree.
         tree = self._fit_tree(df=df, target_type=target_type, max_depth=max_depth)
 
-        if target_type == TargetType.RESULT:
-            classes = ['H', 'D', 'A']
-        elif target_type == TargetType.OVER_UNDER:
-            classes = ['U', 'O']
-        else:
-            raise TypeError(f'Undefiend target type: "{target_type.name}"')
+        from src.preprocessing.utils.target import class_names
+        classes = class_names(target_type)
 
         _, ax = plt.subplots(constrained_layout=True)
         ax = plot_tree(

@@ -1,0 +1,4 @@
+-r requirements-analysis.txt
+-r requirements-fixtures.txt
+tensorflow==2.15.1
+tensorflow-io-gcs-filesystem==0.37.1

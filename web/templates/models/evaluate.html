@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Evaluate{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Evaluate model</h1>
+  <p class="muted">Filter by dataset, odd range, and probability percentiles. Profit Balance is for Result models.</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  <form method="get" action="{{ bp }}/models/evaluate" class="form-row">
+    <div>
+      <label for="league_id">League</label>
+      <select id="league_id" name="league_id" onchange="this.form.submit()">
+        <option value="">Select...</option>
+        {% for league in leagues %}
+          <option value="{{ league.league_id }}" {% if league.league_id == selected_league %}selected{% endif %}>{{ league.league_id }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="model_id">Model</label>
+      <select id="model_id" name="model_id" onchange="this.form.submit()">
+        <option value="">Select...</option>
+        {% for m in models %}
+          <option value="{{ m.model_id }}" {% if m.model_id == selected_model %}selected{% endif %}>{{ m.model_id }} ({{ m.target_type }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if selected_league and selected_model %}
+  <form method="post" action="{{ bp }}/models/evaluate">
+    <input type="hidden" name="league_id" value="{{ selected_league }}" />
+    <input type="hidden" name="model_id" value="{{ selected_model }}" />
+    <div class="form-row">
+      <div>
+        <label for="dataset">Dataset</label>
+        <select id="dataset" name="dataset">
+          {% set ds = form.dataset if form is defined else 'Eval' %}
+          {% for opt in ['All', 'Train', 'Eval'] %}
+            <option value="{{ opt }}" {% if ds == opt %}selected{% endif %}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="odd_range">Odd range</label>
+        <select id="odd_range" name="odd_range">
+          {% set orng = form.odd_range if form is defined else 'none' %}
+          {% for item in odd_ranges %}
+            <option value="{{ item.value }}" {% if orng == item.value %}selected{% endif %}>{{ item.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="p1">P-Home %</label>
+        <input id="p1" name="p1" type="number" min="0" max="100" value="{{ form.p1 if form is defined else 0 }}" />
+      </div>
+      <div>
+        <label for="px">P-Draw %</label>
+        <input id="px" name="px" type="number" min="0" max="100" value="{{ form.px if form is defined else 0 }}" />
+      </div>
+      <div>
+        <label for="p2">P-Away %</label>
+        <input id="p2" name="p2" type="number" min="0" max="100" value="{{ form.p2 if form is defined else 0 }}" />
+      </div>
+      <div>
+        <label for="pu">P-Under %</label>
+        <input id="pu" name="pu" type="number" min="0" max="100" value="{{ form.pu if form is defined else 0 }}" />
+      </div>
+      <div>
+        <label for="po">P-Over %</label>
+        <input id="po" name="po" type="number" min="0" max="100" value="{{ form.po if form is defined else 0 }}" />
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit">Evaluate</button>
+    </div>
+  </form>
+
+  <form method="post" action="{{ bp }}/models/evaluate/filter" class="form-row" style="margin-top:1rem;">
+    <input type="hidden" name="league_id" value="{{ selected_league }}" />
+    <input type="hidden" name="model_id" value="{{ selected_model }}" />
+    <input type="hidden" name="dataset" value="{{ form.dataset if form is defined else 'Eval' }}" />
+    <input type="hidden" name="odd_range" value="{{ form.odd_range if form is defined else 'none' }}" />
+    <input type="hidden" name="p1" value="{{ form.p1 if form is defined else 0 }}" />
+    <input type="hidden" name="px" value="{{ form.px if form is defined else 0 }}" />
+    <input type="hidden" name="p2" value="{{ form.p2 if form is defined else 0 }}" />
+    <input type="hidden" name="pu" value="{{ form.pu if form is defined else 0 }}" />
+    <input type="hidden" name="po" value="{{ form.po if form is defined else 0 }}" />
+    <div>
+      <label for="name">Save current filter as</label>
+      <input id="name" name="name" placeholder="mid-odds-home" required />
+    </div>
+    <div style="align-self:end;">
+      <button class="secondary" type="submit">Store filter</button>
+    </div>
+  </form>
+
+  {% if filters %}
+  <h3 style="margin-top:1rem;">Saved filters</h3>
+  <ul>
+    {% for f in filters %}
+      <li>
+        {{ f.name }}
+        <form method="post" action="{{ bp }}/models/evaluate/filter/{{ f.id }}/delete" style="display:inline;">
+          <input type="hidden" name="league_id" value="{{ selected_league }}" />
+          <input type="hidden" name="model_id" value="{{ selected_model }}" />
+          <button class="danger" type="submit">Delete</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% endif %}
+</section>
+
+{% if result %}
+<section class="panel">
+  <h2>Metrics</h2>
+  <div class="grid">
+    <div class="stat"><div class="label">Accuracy</div><div class="value">{{ result.metrics.accuracy }}</div></div>
+    <div class="stat"><div class="label">F1</div><div class="value">{{ result.metrics.f1 }}</div></div>
+    <div class="stat"><div class="label">Precision</div><div class="value">{{ result.metrics.precision }}</div></div>
+    <div class="stat"><div class="label">Recall</div><div class="value">{{ result.metrics.recall }}</div></div>
+    <div class="stat"><div class="label">Correct</div><div class="value">{{ result.metrics.correct }}/{{ result.metrics.samples }}</div></div>
+    <div class="stat"><div class="label">Profit Balance</div><div class="value">{{ result.metrics.profit_balance }}</div></div>
+  </div>
+  <p class="muted">If Profit Balance is lower than accuracy, the filtered set is mathematically profitable (per ProphitBet definition).</p>
+  {% if form is defined %}
+  <div class="actions">
+    <a class="btn secondary" href="{{ bp }}/models/evaluate/export?league_id={{ selected_league }}&model_id={{ selected_model }}&dataset={{ form.dataset }}&odd_range={{ form.odd_range }}&p1={{ form.p1 }}&px={{ form.px }}&p2={{ form.p2 }}&pu={{ form.pu }}&po={{ form.po }}&fmt=csv">Export CSV</a>
+    <a class="btn secondary" href="{{ bp }}/models/evaluate/export?league_id={{ selected_league }}&model_id={{ selected_model }}&dataset={{ form.dataset }}&odd_range={{ form.odd_range }}&p1={{ form.p1 }}&px={{ form.px }}&p2={{ form.p2 }}&pu={{ form.pu }}&po={{ form.po }}&fmt=xlsx">Export Excel</a>
+  </div>
+  {% endif %}
+</section>
+{% if result.seasonal %}
+<section class="panel">
+  <h2>Seasonal metrics</h2>
+  <table>
+    <thead><tr><th>Season</th><th>Samples</th><th>Correct</th><th>Accuracy</th></tr></thead>
+    <tbody>
+      {% for s in result.seasonal %}
+      <tr><td>{{ s.season }}</td><td>{{ s.samples }}</td><td>{{ s.correct }}</td><td>{{ s.accuracy }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+<section class="panel">
+  <h2>Preview</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          {% if result.preview %}
+            {% for key in result.preview[0].keys() %}<th>{{ key }}</th>{% endfor %}
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in result.preview %}
+          <tr class="{% if row.Correct %}correct{% endif %}">
+            {% for value in row.values() %}<td>{{ value }}</td>{% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

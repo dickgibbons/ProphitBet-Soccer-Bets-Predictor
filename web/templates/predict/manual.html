@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Predict{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Manual predict</h1>
+  <p class="muted">Pick home/away teams and odds. No internet required for prediction itself.</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  {% if result %}<div class="success">Predicted <strong>{{ result.predicted }}</strong> for {{ result.home }} vs {{ result.away }}</div>{% endif %}
+
+  <form method="get" action="{{ bp }}/predict/manual" class="form-row">
+    <div>
+      <label for="league_id">League</label>
+      <select id="league_id" name="league_id" onchange="this.form.submit()">
+        <option value="">Select...</option>
+        {% for league in leagues %}
+          <option value="{{ league.league_id }}" {% if league.league_id == selected_league %}selected{% endif %}>{{ league.league_id }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if selected_league %}
+  <form method="post" action="{{ bp }}/predict/manual">
+    <input type="hidden" name="league_id" value="{{ selected_league }}" />
+    <div class="form-row">
+      <div>
+        <label for="model_id">Model</label>
+        <select id="model_id" name="model_id" required>
+          {% for m in models %}
+            <option value="{{ m.model_id }}" {% if m.model_id == selected_model %}selected{% endif %}>{{ m.model_id }} ({{ m.target_type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="home">Home</label>
+        <select id="home" name="home" required>
+          {% for t in teams.home %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="away">Away</label>
+        <select id="away" name="away" required>
+          {% for t in teams.away %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="odd_1">Odd 1</label>
+        <input id="odd_1" name="odd_1" type="number" step="0.01" min="1.01" value="1.90" required />
+      </div>
+      <div>
+        <label for="odd_x">Odd X</label>
+        <input id="odd_x" name="odd_x" type="number" step="0.01" min="1.01" value="3.40" required />
+      </div>
+      <div>
+        <label for="odd_2">Odd 2</label>
+        <input id="odd_2" name="odd_2" type="number" step="0.01" min="1.01" value="4.00" required />
+      </div>
+    </div>
+    <button type="submit">Predict</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if result %}
+<section class="panel">
+  <h2>Latest result</h2>
+  <pre>{{ result | tojson(indent=2) }}</pre>
+</section>
+{% endif %}
+
+{% if history %}
+<section class="panel">
+  <div class="actions" style="justify-content:space-between;">
+    <h2>Session history</h2>
+    <div class="actions">
+      <a class="btn secondary" href="{{ bp }}/predict/export?fmt=csv">Export CSV</a>
+      <a class="btn secondary" href="{{ bp }}/predict/export?fmt=xlsx">Export Excel</a>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          {% for key in history[0].keys() %}<th>{{ key }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in history %}
+          <tr>{% for value in row.values() %}<td>{{ value }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

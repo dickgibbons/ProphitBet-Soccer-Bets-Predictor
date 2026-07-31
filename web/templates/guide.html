@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}User Guide{% endblock %}
+{% block content %}
+<section class="panel guide-panel">
+  <h1>User guide</h1>
+  <p class="muted">How to use ProphitBet Web and what each field means.</p>
+  <article class="guide-body">{{ content | safe }}</article>
+</section>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Research{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Research sweep</h1>
+  <p class="muted">Train missing models, grid odd/probability filters on Eval, rank by unit-stake ROI. Long-running job.</p>
+  <form method="post" action="{{ bp }}/research/run">
+    <div class="form-row">
+      <div>
+        <label>Leagues</label>
+        {% for league in leagues %}
+          <label style="display:block;"><input type="checkbox" name="league_ids" value="{{ league.league_id }}" checked /> {{ league.league_id }}</label>
+        {% endfor %}
+      </div>
+      <div>
+        <label for="min_samples">Min samples</label>
+        <input id="min_samples" name="min_samples" type="number" value="40" />
+      </div>
+      <div>
+        <label for="top_n">Top N per league</label>
+        <input id="top_n" name="top_n" type="number" value="25" />
+      </div>
+      <div>
+        <label><input type="checkbox" name="train_missing" checked /> Train missing models first</label>
+      </div>
+    </div>
+    <button type="submit">Start research job</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Past reports</h2>
+  {% if reports %}
+  <ul>
+    {% for r in reports %}
+      <li>
+        <a href="{{ bp }}/research?report={{ r.name }}">{{ r.name }}</a>
+        <span class="muted">· {{ r.generated_at }} · {{ r.leagues }} leagues · {{ r.top_count }} edges</span>
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No reports yet.</p>
+  {% endif %}
+</section>
+
+{% if report_data %}
+<section class="panel">
+  <h2>Global top — {{ selected_report }}</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>League</th><th>Model</th><th>Odd</th><th>P</th><th>ROI</th><th>Acc</th><th>n</th><th>PB edge</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in report_data.global_top %}
+      <tr>
+        <td>{{ h.league_id }}</td>
+        <td>{{ h.model_id }}</td>
+        <td>{{ h.odd_range }}</td>
+        <td class="muted">{{ h.percentiles }}</td>
+        <td>{{ h.roi }}</td>
+        <td>{{ h.accuracy }}</td>
+        <td>{{ h.samples }}</td>
+        <td>{{ h.pb_edge }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

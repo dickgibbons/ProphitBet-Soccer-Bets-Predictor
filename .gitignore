@@ -1,0 +1,10 @@
+.venv/
+.venv-web/
+__pycache__/
+*.pyc
+data/
+*.db
+.DS_Store
+storage/leagues/
+!storage/network/
+!storage/graphics/

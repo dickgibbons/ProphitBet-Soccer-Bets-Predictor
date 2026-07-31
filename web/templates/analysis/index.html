@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Analysis{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>League analysis</h1>
+  <p class="muted">Requires analysis/full-ml dependencies (seaborn, boruta, etc.).</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post" action="{{ bp }}/analysis">
+    <div class="form-row">
+      <div>
+        <label for="league_id">League</label>
+        <select id="league_id" name="league_id" required>
+          <option value="">Select...</option>
+          {% for league in leagues %}
+            <option value="{{ league.league_id }}" {% if league.league_id == selected_league %}selected{% endif %}>{{ league.league_id }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="analysis_type">Analysis</label>
+        <select id="analysis_type" name="analysis_type">
+          {% for a in analysis_types %}
+            <option value="{{ a.value }}" {% if form is defined and form.analysis_type == a.value %}selected{% endif %}>{{ a.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="target_key">Target (Boruta/coef/etc)</label>
+        <select id="target_key" name="target_key">
+          {% for t in target_choices %}
+            <option value="{{ t.value }}">{{ t.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="season">Season (blank=all)</label>
+        <input id="season" name="season" type="text" value="{{ form.season if form is defined else '' }}" placeholder="2023" />
+      </div>
+      <div>
+        <label for="colormap">Colormap</label>
+        <select id="colormap" name="colormap">
+          {% for c in ['Blues','Coolwarm','Crest','Rocket','Summer'] %}
+            <option {% if form is defined and form.colormap == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit">Run analysis</button>
+  </form>
+</section>
+{% if result %}
+<section class="panel">
+  <h2>{{ result.analysis_type }}</h2>
+  <img alt="analysis plot" src="data:image/png;base64,{{ result.image_b64 }}" style="max-width:100%; background:#fff; border-radius:6px;" />
+</section>
+{% endif %}
+{% endblock %}

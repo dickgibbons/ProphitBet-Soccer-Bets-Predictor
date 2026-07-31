@@ -37,12 +37,8 @@ class ClassifierExplainer(ABC):
         features = df.columns.drop(dataset_preprocessor.non_trainable_columns, errors='ignore')
         self._df = pd.DataFrame(data=self._x, columns=features)
 
-        if target_type == TargetType.RESULT:
-            self._class_names = ['H', 'D', 'A']
-        elif target_type == TargetType.OVER_UNDER:
-            self._class_names = ['U', 'O']
-        else:
-            raise ValueError(f'Undefined target_type: "{target_type.name}"')
+        from src.preprocessing.utils.target import class_names as target_class_names
+        self._class_names = target_class_names(target_type)
 
         self._num_classes = len(self._class_names)
         self._shap_values = None

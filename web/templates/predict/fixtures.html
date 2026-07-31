@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Fixtures{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Predict fixtures</h1>
+  <p class="muted">Scrape FootyStats (fixtures Docker profile) or upload a CSV with columns Home, Away, 1, X, 2.</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  <form method="get" action="{{ bp }}/predict/fixtures" class="form-row">
+    <div>
+      <label for="league_id">League</label>
+      <select id="league_id" name="league_id" onchange="this.form.submit()">
+        <option value="">Select...</option>
+        {% for league in leagues %}
+          <option value="{{ league.league_id }}" {% if league.league_id == selected_league %}selected{% endif %}>{{ league.league_id }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if selected_league %}
+  <form method="post" action="{{ bp }}/predict/fixtures" enctype="multipart/form-data">
+    <input type="hidden" name="league_id" value="{{ selected_league }}" />
+    <div class="form-row">
+      <div>
+        <label for="model_id">Model</label>
+        <select id="model_id" name="model_id" required>
+          {% for m in models %}
+            <option value="{{ m.model_id }}" {% if m.model_id == selected_model %}selected{% endif %}>{{ m.model_id }} ({{ m.target_type }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="fixture_date">Fixture date</label>
+        <input id="fixture_date" name="fixture_date" type="date" value="{{ today }}" required />
+      </div>
+      <div>
+        <label for="csv_file">Or CSV upload</label>
+        <input id="csv_file" name="csv_file" type="file" accept=".csv,text/csv" />
+      </div>
+    </div>
+    <button type="submit">Predict fixtures</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if result %}
+<section class="panel">
+  <h2>{{ result.count }} fixtures · {{ result.model_id }}</h2>
+  <div class="actions">
+    <a class="btn secondary" href="{{ bp }}/predict/fixtures/export?fmt=csv">Export CSV</a>
+    <a class="btn secondary" href="{{ bp }}/predict/fixtures/export?fmt=xlsx">Export Excel</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>{% for key in result.rows[0].keys() %}<th>{{ key }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for row in result.rows %}
+        <tr>{% for v in row.values() %}<td>{{ v }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

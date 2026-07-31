@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Leagues{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="actions" style="justify-content:space-between;">
+    <h1>Leagues</h1>
+    <a class="btn" href="{{ bp }}/leagues/new">New League</a>
+  </div>
+  {% if leagues %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Country</th><th>Name</th><th>Start</th><th>Rows</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for league in leagues %}
+        <tr>
+          <td><a href="{{ bp }}/leagues/{{ league.league_id }}">{{ league.league_id }}</a></td>
+          <td>{{ league.country }}</td>
+          <td>{{ league.name }}</td>
+          <td>{{ league.start_year }}</td>
+          <td>{{ league.rows }}</td>
+          <td>
+            <form method="post" action="{{ bp }}/leagues/{{ league.league_id }}/delete" onsubmit="return confirm('Delete {{ league.league_id }}?');">
+              <button class="danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="muted">No leagues created yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

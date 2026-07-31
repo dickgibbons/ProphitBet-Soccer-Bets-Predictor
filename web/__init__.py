@@ -1,0 +1,1 @@
+"""ProphitBet web MVP package."""

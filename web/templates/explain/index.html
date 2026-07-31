@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Explain{% endblock %}
+{% block content %}
+<section class="panel">
+  <h1>Model explainability</h1>
+  <p class="muted">SHAP plots require the analysis/full-ml profile. Boundary plot works for most sklearn models.</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  <form method="get" action="{{ bp }}/explain" class="form-row">
+    <div>
+      <label for="league_id">League</label>
+      <select id="league_id" name="league_id" onchange="this.form.submit()">
+        <option value="">Select...</option>
+        {% for league in leagues %}
+          <option value="{{ league.league_id }}" {% if league.league_id == selected_league %}selected{% endif %}>{{ league.league_id }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="model_id">Model</label>
+      <select id="model_id" name="model_id" onchange="this.form.submit()">
+        <option value="">Select...</option>
+        {% for m in models %}
+          <option value="{{ m.model_id }}" {% if m.model_id == selected_model %}selected{% endif %}>{{ m.model_id }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if selected_league and selected_model %}
+  <form method="post" action="{{ bp }}/explain">
+    <input type="hidden" name="league_id" value="{{ selected_league }}" />
+    <input type="hidden" name="model_id" value="{{ selected_model }}" />
+    <div class="form-row">
+      <div>
+        <label for="plot_type">Plot</label>
+        <select id="plot_type" name="plot_type">
+          {% for p in ['shap_bar','waterfall','pdp','boundary'] %}
+            <option value="{{ p }}" {% if form is defined and form.plot_type == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="target_label">Class label</label>
+        <input id="target_label" name="target_label" placeholder="H or U or Yes" value="{{ form.target_label if form is defined else '' }}" />
+      </div>
+      <div>
+        <label for="feature_a">Feature A</label>
+        <input id="feature_a" name="feature_a" value="{{ form.feature_a if form is defined else '1' }}" />
+      </div>
+      <div>
+        <label for="feature_b">Feature B (boundary)</label>
+        <input id="feature_b" name="feature_b" value="{{ form.feature_b if form is defined else 'X' }}" />
+      </div>
+      <div>
+        <label for="match_index">Match index (waterfall)</label>
+        <input id="match_index" name="match_index" type="number" value="{{ form.match_index if form is defined else 0 }}" />
+      </div>
+    </div>
+    <button type="submit">Explain</button>
+  </form>
+  {% endif %}
+</section>
+{% if result %}
+<section class="panel">
+  <h2>{{ result.plot_type }} · {{ result.target_label }}</h2>
+  <p class="muted">Classes: {{ result.class_names|join(', ') }}</p>
+  <img alt="explain plot" src="data:image/png;base64,{{ result.image_b64 }}" style="max-width:100%; background:#fff; border-radius:6px;" />
+</section>
+{% endif %}
+{% endblock %}

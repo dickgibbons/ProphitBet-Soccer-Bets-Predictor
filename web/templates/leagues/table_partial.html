@@ -1,0 +1,23 @@
+<p class="muted">Showing {{ shown_rows }} of {{ filtered_rows }} filtered rows</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        {% for col in columns %}
+          <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          {% for col in columns %}
+            <td>{{ row[col] if row[col] is not none else '' }}</td>
+          {% endfor %}
+        </tr>
+      {% else %}
+        <tr><td colspan="{{ columns|length }}">No matches</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

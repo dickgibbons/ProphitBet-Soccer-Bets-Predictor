@@ -1,0 +1,14 @@
+.venv
+.venv-web
+.git
+__pycache__
+**/__pycache__
+*.pyc
+data/*.db
+data/research
+storage/leagues
+*.md
+!USER_GUIDE.md
+.DS_Store
+canvases
+agent-tools
