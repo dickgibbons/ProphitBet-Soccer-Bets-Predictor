@@ -1,5 +1,11 @@
 # SESSION_LOG
 
+## 2026-07-31 — Synced to GitHub fork
+
+- Committed web app, research scripts, PLAYBOOK, deploy docs (70 files).
+- Pushed to https://github.com/dickgibbons/ProphitBet-Soccer-Bets-Predictor (`fork` remote). Did not push to upstream `kochlisGit`.
+- League data / trained models / sweep JSON stay on VPS only (`data/` gitignored).
+
 ## 2026-07-31 — Predict dropdown missing new leagues
 
 - Cause: uvicorn kept in-memory `LeagueDatabase` from startup; batch created 28 leagues on disk but UI still showed old top-5 set.
